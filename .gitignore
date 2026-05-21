@@ -1,0 +1,8 @@
+#Env files
+.env
+
+#MacOS files
+.DS_Store
+
+#Draft files
+draft.py
