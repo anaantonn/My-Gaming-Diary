@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from sqlalchemy import create_engine
 
 from logger import get_logger
