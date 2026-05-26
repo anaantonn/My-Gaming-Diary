@@ -1,17 +1,22 @@
-from datetime import datetime
-
 from logger import get_logger
 
 logger = get_logger(__name__)
 
-SESSION_TIMEOUT_MINUTES = 35 # Steam refreshes every ~ 30 minutes
+SESSION_TIMEOUT_MINUTES = 30  # Steam mid-session refresh interval
+SESSION_INACTIVITY_MINUTES = 35  # fallback flush if no update received for this long
 
 
 class SessionTracker:
     """
     Tracks active play sessions based on playtime snapshots from the Steam API.
-    Flushes completed sessions to the database once a session has been inactive
-    for SESSION_TIMEOUT_MINUTES.
+
+    Flush strategy (two signals, either triggers a flush):
+    1. Quick update — gap between two consecutive deltas for the same game is
+       less than SESSION_TIMEOUT_MINUTES. Steam only sends updates mid-session
+       at ~30 min intervals, so a shorter gap means the game was quit and
+       possibly restarted.
+    2. Inactivity timeout — no delta received for SESSION_INACTIVITY_MINUTES.
+       Covers short sessions (< 30 min) where Steam sends only one update at quit.
     """
 
     def __init__(self, db, user_id):
@@ -49,12 +54,16 @@ class SessionTracker:
                         "game_name": game_name,
                         "start_time": now,
                         "last_activity": now,
+                        "prev_activity": None,  # no previous update yet
                         "accumulated_minutes": delta,
                     }
                     logger.info(f"Session started — {game_name}")
                 else:
-                    self.active_sessions[app_id]["accumulated_minutes"] += delta
+                    # Shift last_activity into prev_activity before updating
+                    self.active_sessions[app_id]["prev_activity"] = \
+                        self.active_sessions[app_id]["last_activity"]
                     self.active_sessions[app_id]["last_activity"] = now
+                    self.active_sessions[app_id]["accumulated_minutes"] += delta
                     logger.debug(
                         f"Session updated — {game_name}, "
                         f"total={self.active_sessions[app_id]['accumulated_minutes']}min"
@@ -64,21 +73,38 @@ class SessionTracker:
                 # New game seen but not yet played — add to baseline for future comparison
                 self.baseline.setdefault(app_id, current_forever)
 
-    def flush_timed_out(self, now: datetime) -> None:
+    def flush_timed_out(self, now):
         """
-        Flush any sessions that have had no playtime update for SESSION_TIMEOUT_MINUTES.
-        These are considered finished.
+        Flush sessions that show signs of having ended, using two signals:
+        1. Quick update: gap between prev_activity and last_activity < 30 min
+        2. Inactivity: no update received for > 35 min
         """
-        timed_out = [
-            app_id
-            for app_id, session in self.active_sessions.items()
-            if (now - session["last_activity"]).total_seconds()
-            > SESSION_TIMEOUT_MINUTES * 60
-        ]
+        timed_out = []
+        for app_id, session in self.active_sessions.items():
+            prev = session["prev_activity"]
+
+            # Signal 1
+            if prev is not None:
+                gap = (session["last_activity"] - prev).total_seconds()
+                if gap < SESSION_TIMEOUT_MINUTES * 60:
+                    logger.debug(
+                        f"Quit detected (gap={gap:.0f}s) — {session['game_name']}"
+                    )
+                    timed_out.append(app_id)
+                    continue
+
+            # Signal 2
+            inactive = (now - session["last_activity"]).total_seconds()
+            if inactive > SESSION_INACTIVITY_MINUTES * 60:
+                logger.debug(
+                    f"Inactivity timeout ({inactive:.0f}s) — {session['game_name']}"
+                )
+                timed_out.append(app_id)
+
         for app_id in timed_out:
             self._flush(app_id, self.active_sessions.pop(app_id))
 
-    def flush_all(self) -> None:
+    def flush_all(self):
         """
         Flush all active sessions regardless of timeout.
         Called on shutdown to avoid losing in-progress session data.
@@ -90,7 +116,7 @@ class SessionTracker:
             self._flush(app_id, session)
         self.active_sessions.clear()
 
-    def _flush(self, app_id: int, session: dict) -> None:
+    def _flush(self, app_id, session):
         """Write a single completed session to the database."""
         try:
             game_name = session["game_name"]

@@ -37,13 +37,17 @@ def main():
         api_key, steam_id = load_config()
         db_url = load_db_config()
     except ValueError as e:
+        logger.error(f"Configuration error: {e}")
         raise SystemExit(f"Configuration error: {e}")
 
     # Initialise Steam client
     try:
         steam = SteamClient(api_key, steam_id)
     except Exception:
-        raise SystemExit("Failed to initialise Steam client. Check your API key.")
+        logger.error("Failed to initialise Steam client. " \
+                        "Check your API key and Steam ID.")
+        raise SystemExit("Failed to initialise Steam client. " \
+                            "Check your API key.")
 
     with DiaryDatabase(db_url) as db:
         # Set up schema on first run, no-op on subsequent runs
@@ -58,7 +62,10 @@ def main():
         # Take the first snapshot to establish a baseline before tracking begins
         initial_snapshot = steam.get_playtime_snapshot()
         if not initial_snapshot:
-            raise SystemExit("Initial Steam API call returned no data. Check your Steam ID and API key.")
+            logger.error("Initial Steam API call returned no data. " \
+                            "Check your Steam ID and API key.")
+            raise SystemExit("Initial Steam API call returned no data. " \
+                                "Check your Steam ID and API key.")
 
         tracker = SessionTracker(db, user_id)
         tracker.initialise(initial_snapshot)
