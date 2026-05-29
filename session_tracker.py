@@ -1,8 +1,10 @@
+from datetime import timedelta
+
 from logger import get_logger
 
 logger = get_logger(__name__)
 
-SESSION_TIMEOUT_MINUTES = 30  # Steam mid-session refresh interval
+SESSION_TIMEOUT_MINUTES = 30  # Steam updates ~ every 30 minutes
 SESSION_INACTIVITY_MINUTES = 35  # fallback flush if no update received for this long
 
 
@@ -52,7 +54,7 @@ class SessionTracker:
                 if app_id not in self.active_sessions:
                     self.active_sessions[app_id] = {
                         "game_name": game_name,
-                        "start_time": now,
+                        "start_time": now - timedelta(minutes=delta),
                         "last_activity": now,
                         "prev_activity": None,  # no previous update yet
                         "accumulated_minutes": delta,
@@ -128,8 +130,8 @@ class SessionTracker:
             self.db.save_session(self.user_id, app_id, start_time, end_time, duration)
             logger.info(
                 f"Session flushed — {game_name} | "
-                f"{start_time.strftime('%d-%m-%Y %H:%M')} → "
-                f"{end_time.strftime('%d-%m-%Y %H:%M')} | "
+                f"{start_time.astimezone().strftime('%d-%m-%Y %H:%M')} → "
+                f"{end_time.astimezone().strftime('%d-%m-%Y %H:%M')} | "
                 f"{duration}min"
             )
         except Exception as e:

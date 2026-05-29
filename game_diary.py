@@ -1,5 +1,5 @@
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 
 from config import load_config, load_db_config
 from database import DiaryDatabase
@@ -19,8 +19,8 @@ def poll_loop(steam, tracker):
 
     try:
         while True:
-            now = datetime.now()
-            logger.info(f"Polling at {now.strftime('%H:%M:%S')} ...")
+            now = datetime.now(timezone.utc)
+            logger.info(f"Polling at {now.astimezone().strftime('%H:%M:%S')} ...")
             snapshot = steam.get_playtime_snapshot()
             tracker.update(snapshot, now)
             tracker.flush_timed_out(now)
