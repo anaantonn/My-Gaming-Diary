@@ -1,8 +1,15 @@
-#Env files
+# Env files
 .env
 
-#MacOS files
+# MacOS files
 .DS_Store
 
-#Draft files
+# Draft files
 draft.py
+game_diary.draft.py
+
+# Log files
+logs/
+
+# Python cache files
+__pycache__/
