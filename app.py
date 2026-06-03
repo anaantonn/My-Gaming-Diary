@@ -1,16 +1,26 @@
-from flask import Flask, jsonify
+import os
+
+from flask import Flask, jsonify, session
 from sqlalchemy import text
+from dotenv import load_dotenv
 
 from config import load_db_config
 from database import DiaryDatabase
 from logger import get_logger
+from auth import auth
 
 logger = get_logger(__name__)
 
 
 def create_app():
     """Factory function to create and configure the Flask app."""
+    load_dotenv()
     app = Flask(__name__)
+    app.secret_key = os.getenv("SECRET_KEY")
+    app.config["STEAM_API_KEY"] = os.getenv("STEAM_API_KEY")
+
+    if not app.secret_key:
+        raise RuntimeError("SECRET_KEY is not set in .env")
 
     # Load database configuration and initialize connection
     db_url = load_db_config()
@@ -47,8 +57,21 @@ def create_app():
                     "message": "Database connection failed."
                 }
             ), 500
+    # Temporary route for testing purposes
+    @app.route("/me")
+    def me():
+        return jsonify({
+            "user_id": session.get("user_id"),
+            "steam_id": session.get("steam_id"),
+        })
+
+    _register_blueprints(app)
 
     return app
+
+def _register_blueprints(app):
+    """Register all blueprints with the Flask app."""
+    app.register_blueprint(auth)
 
 if __name__ == "__main__":
     app = create_app()
