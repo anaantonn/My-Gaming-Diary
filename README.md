@@ -10,7 +10,9 @@ The script polls the Steam API in the background and automatically logs each ses
 
 Work in progress. Core tracking is functional, sessions are detected, logged to the
 database, and queryable by day, month, and year. Flask foundation and Steam OpenID
-authentication are in place. API routes are configured. Frontend dashoard next.
+authentication are in place. API routes are configured.
+Frontend base in place. Jinja2 templates and Tailwind CSS configured.
+Diary dashboard view is next.
 
 ## How it works
 
@@ -93,18 +95,20 @@ their own API key.
 
 ## Project structure
 
-| File                 | Purpose                                                         |
-| -------------------- | --------------------------------------------------------------- |
-| `game_diary.py`      | Entry point —> wires everything together and runs the poll loop |
-| `steam_client.py`    | Steam API wrapper                                               |
-| `session_tracker.py` | Session state, timeout detection, flush logic                   |
-| `database.py`        | Connection management, logging, transactions                    |
-| `sql.py`             | Raw SQL queries and schema                                      |
-| `config.py`          | Environment variable loading                                    |
-| `logger.py`          | Logging setup (terminal + rotating file)                        |
-| `app.py`             | Flask Application Factory as a web server entry point           |
-| `auth.py`            | Steam OpenID login, callback and logout routes                  |
-| `routes.py`          | API blueprint — JSON endpoints for sessions and playtime data   |
+| File                   | Purpose                                                         |
+| ---------------------- | --------------------------------------------------------------- |
+| `game_diary.py`        | Entry point —> wires everything together and runs the poll loop |
+| `steam_client.py`      | Steam API wrapper                                               |
+| `session_tracker.py`   | Session state, timeout detection, flush logic                   |
+| `database.py`          | Connection management, logging, transactions                    |
+| `sql.py`               | Raw SQL queries and schema                                      |
+| `config.py`            | Environment variable loading                                    |
+| `logger.py`            | Logging setup (terminal + rotating file)                        |
+| `app.py`               | Flask Application Factory as a web server entry point           |
+| `auth.py`              | Steam OpenID login, callback and logout routes                  |
+| `routes.py`            | API blueprint - JSON endpoints for sessions and playtime data   |
+| `templates/base.html`  | Shared layout — navigation, Tailwind CSS, Chart.js              |
+| `templates/index.html` | Homepage — login prompt or diary entry for the day              |
 
 ## Logs
 
@@ -123,3 +127,12 @@ Responses are JSON.
 | `GET /api/playtime/daily`   | Playtime per game per day, plus daily total     |
 | `GET /api/playtime/monthly` | Playtime per game per month, plus monthly total |
 | `GET /api/playtime/yearly`  | Playtime per game per year, plus yearly total   |
+
+## Frontend
+
+The web interface is built with Jinja2 templates and styled with Tailwind CSS.
+Templates live in the `templates/` directory and extend `base.html`,
+which provides the shared layout, navigation, and Chart.js.
+
+The index page shows a login prompt for unauthenticated users.
+Once logged in, it will display the current day's gaming diary entry.
