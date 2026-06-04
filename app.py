@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from config import load_db_config
 from database import DiaryDatabase
 from logger import get_logger
+from routes import routes
 from auth import auth
 
 logger = get_logger(__name__)
@@ -72,6 +73,7 @@ def create_app():
 def _register_blueprints(app):
     """Register all blueprints with the Flask app."""
     app.register_blueprint(auth)
+    app.register_blueprint(routes)
 
 if __name__ == "__main__":
     app = create_app()

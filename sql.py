@@ -148,7 +148,7 @@ class Sql:
         )
 
     @staticmethod
-    def get_sessions_by_user(conn, user_id):
+    def get_sessions_by_user(conn, user_id, date=None):
         """Return all sessions for a user with game name, newest first."""
         result = conn.execute(
             text("""
@@ -162,9 +162,10 @@ class Sql:
                 FROM sessions s
                 JOIN games g ON g.app_id = s.app_id
                 WHERE s.user_id = :user_id
+                AND (:date IS NULL OR DATE(s.start_time) = :date)
                 ORDER BY s.start_time DESC
             """),
-            {"user_id": user_id}
+            {"user_id": user_id, "date": date}
         )
         return result.fetchall()
 
@@ -183,16 +184,17 @@ class Sql:
         return result.fetchall()
 
     @staticmethod
-    def get_daily_playtime(conn, user_id):
+    def get_daily_playtime(conn, user_id, date=None):
         """Playtime per game per day, plus the day total, for a user."""
         result = conn.execute(
             text("""
                 SELECT app_id, game_name, play_date, game_minutes, day_total_minutes
                 FROM user_daily_playtime
                 WHERE user_id = :user_id
+                AND (:date IS NULL OR play_date = :date)
                 ORDER BY play_date DESC
             """),
-            {"user_id": user_id}
+            {"user_id": user_id, "date": date}
         )
         return result.fetchall()
 
