@@ -1,12 +1,16 @@
-{% extends "base.html" %}
-
-{% block content %}
-
-{% if session.user_id %}
-    <h1>Welcome back!</h1>
+{% extends "base.html" %} {% block content %} {% if session.user_id %}
+<h1>Welcome back!</h1>
 {% else %}
-    <h1>Welcome to My Gaming Diary</h1>
-    <p>Track your Steam play sessions as they happen.</p>
-{% endif %}
-
+<section
+    class="space-y-2 flex flex-col items-center gap-4 max-w-3xl mx-auto px-5 py-12"
+>
+    <h1 class="text-4xl font-bold">Welcome to My Gaming Diary!</h1>
+    <p class="font-medium">Track your Steam play sessions as they happen.</p>
+    <a
+        class="inline-block bg-sky-950/75 py-3 px-5 ring-2 inset-ring-blue-500/50 shadow-lg shadow-blue-500/50 rounded-xl hover:bg-sky-400 hover:text-blue-800 hover:shadow-blue-900 hover:shadow-lg transition-colors active:bg-sky-200 active:scale-95"
+        href="/auth/login"
+        >Login with Steam</a
+    >
+    {% endif %}
+</section>
 {% endblock %}

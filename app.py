@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask, jsonify, render_template, session
+from flask import Flask, jsonify, render_template
 from sqlalchemy import text
 from dotenv import load_dotenv
 
