@@ -1,6 +1,6 @@
 # My Gaming Diary
 
-Gaming Dairy's dreams and aspirations are to keep a detailed track of Steam games you've played.
+Gaming Diary's dreams and aspirations are to keep a detailed track of Steam games you've played.
 
 Track your Steam play sessions as they happen, no waiting for a yearly wrapped recap.
 The script polls the Steam API in the background and automatically logs each session
@@ -10,7 +10,7 @@ The script polls the Steam API in the background and automatically logs each ses
 
 Work in progress. Core tracking is functional, sessions are detected, logged to the
 database, and queryable by day, month, and year. Flask foundation and Steam OpenID
-authentication are in place. API routes and a frontend dashboard are next.
+authentication are in place. API routes are configured. Frontend dashoard next.
 
 ## How it works
 
@@ -104,8 +104,22 @@ their own API key.
 | `logger.py`          | Logging setup (terminal + rotating file)                        |
 | `app.py`             | Flask Application Factory as a web server entry point           |
 | `auth.py`            | Steam OpenID login, callback and logout routes                  |
+| `routes.py`          | API blueprint — JSON endpoints for sessions and playtime data   |
 
 ## Logs
 
 Log files are written to the `logs/` directory, one file per module.
 Terminal output shows `INFO` and above. Log files capture everything including `DEBUG`.
+
+## API routes
+
+All routes require an active session (login via Steam first).
+Responses are JSON.
+
+| Route                       | Description                                     |
+| --------------------------- | ----------------------------------------------- |
+| `GET /api/sessions`         | All play sessions, newest first                 |
+| `GET /api/game-totals`      | Total playtime and session count per game       |
+| `GET /api/playtime/daily`   | Playtime per game per day, plus daily total     |
+| `GET /api/playtime/monthly` | Playtime per game per month, plus monthly total |
+| `GET /api/playtime/yearly`  | Playtime per game per year, plus yearly total   |

@@ -100,11 +100,11 @@ class DiaryDatabase:
             )
             raise
 
-    def get_sessions_by_user(self, user_id):
+    def get_sessions_by_user(self, user_id, date=None):
         """Return all sessions for a user with game name, newest first."""
         try:
             with self.engine.connect() as conn:
-                return Sql.get_sessions_by_user(conn, user_id)
+                return Sql.get_sessions_by_user(conn, user_id, date)
         except Exception as e:
             logger.error(f"Failed to fetch sessions for user_id={user_id}: {e}")
             raise
@@ -118,11 +118,11 @@ class DiaryDatabase:
             logger.error(f"Failed to fetch game totals for user_id={user_id}: {e}")
             raise
 
-    def get_daily_playtime(self, user_id):
+    def get_daily_playtime(self, user_id, date=None):
         """Playtime per game per day, plus the day total, for a user."""
         try:
             with self.engine.connect() as conn:
-                return Sql.get_daily_playtime(conn, user_id)
+                return Sql.get_daily_playtime(conn, user_id, date)
         except Exception as e:
             logger.error(f"Failed to fetch daily playtime for user_id={user_id}: {e}")
             raise
