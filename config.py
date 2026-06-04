@@ -10,10 +10,11 @@ logger = get_logger(__name__)
 def load_config():
     load_dotenv()
     key = os.getenv("STEAM_API_KEY")
-    steam_id = os.getenv("STEAM_ACCOUNT_ID")
-    if not key or not steam_id:
-        logger.error("Missing STEAM_API_KEY or STEAM_ACCOUNT_ID in .env")
+    steam_ids = os.getenv("STEAM_ACCOUNT_IDS")
+    if not key or not steam_ids:
+        logger.error("Missing STEAM_API_KEY or STEAM_ACCOUNT_IDS in .env")
         raise ValueError("Missing STEAM_API_KEY or STEAM_ACCOUNT_ID in .env")
+    steam_id = [sid.strip() for sid in steam_ids.split(",") if sid.strip()]
     return key, steam_id
 
 def load_db_config():
