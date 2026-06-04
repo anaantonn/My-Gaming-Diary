@@ -1,9 +1,9 @@
 import re
+from urllib.parse import urlencode
 
 import requests as http
 from flask import (Blueprint, current_app, jsonify,
                     redirect, request, session, url_for)
-from urllib.parse import urlencode
 
 from logger import get_logger
 

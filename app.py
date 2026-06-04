@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask, jsonify, session
+from flask import Flask, jsonify, render_template, session
 from sqlalchemy import text
 from dotenv import load_dotenv
 
@@ -30,12 +30,7 @@ def create_app():
 
     @app.route("/")
     def index():
-        return jsonify(
-            {
-                "status": "ok",
-                "message": "My Gaming Diary API is running."
-            }
-        )
+        return render_template("index.html")
 
     @app.route("/health")
     def health():
@@ -58,13 +53,6 @@ def create_app():
                     "message": "Database connection failed."
                 }
             ), 500
-    # Temporary route for testing purposes
-    @app.route("/me")
-    def me():
-        return jsonify({
-            "user_id": session.get("user_id"),
-            "steam_id": session.get("steam_id"),
-        })
 
     _register_blueprints(app)
 
