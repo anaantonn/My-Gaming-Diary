@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 
 from flask import Flask, jsonify, render_template
 from sqlalchemy import text
@@ -30,7 +31,12 @@ def create_app():
 
     @app.route("/")
     def index():
-        return render_template("index.html")
+        today = datetime.now().astimezone().strftime("%A %d %B %Y")
+        return render_template("index.html", today=today)
+
+    @app.route("/stats")
+    def stats():
+        return render_template("stats.html")
 
     @app.route("/health")
     def health():

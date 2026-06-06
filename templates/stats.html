@@ -1,0 +1,39 @@
+{% extends "base.html" %} {% block content %} {% if session.user_id %}
+<div id="statspage" class="flex-1 flex flex-col">
+    <section class="flex flex-col items-center gap-4 px-5 py-12">
+        <h1 class="text-5xl font-bold">
+            <span
+                class="bg-linear-to-r/increasing from-violet-500 to-fuchsia-500 bg-clip-text text-transparent"
+            >
+                {{ session.display_name }}'s
+            </span>
+            diary stats
+        </h1>
+    </section>
+    <nav
+        id="stats-tabs"
+        class="relative flex justify-center gap-10 mx-8 mb-8 text-5xl cursor-pointer select-none"
+    >
+        <span id="tab-monthly" class="tab pb-2 transition-colors duration-300"
+            >Monthly</span
+        >
+        <span
+            id="tab-yearly"
+            class="tab pb-2 text-gray-300/75 transition-colors duration-300"
+            >Yearly</span
+        >
+        <div
+            id="tab-underline"
+            class="absolute bottom-0 h-0.5 bg-gray-500 transition-all duration-300 ease-in-out"
+        ></div>
+    </nav>
+</div>
+<script src="{{ url_for('static', filename='js/stats.js') }}"></script>
+
+{% else %}
+<meta
+    http-equiv="refresh"
+    content="2;
+                url=/"
+/>
+{% endif %} {% endblock %}
