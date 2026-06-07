@@ -145,6 +145,35 @@ class DiaryDatabase:
             logger.error(f"Failed to fetch yearly playtime for user_id={user_id}: {e}")
             raise
 
+    def get_missing_genre_app_ids(self, user_id):
+        """Return app_ids the user has played that have no genres cached yet."""
+        try:
+            with self.engine.connect() as conn:
+                return Sql.get_missing_genre_app_ids(conn, user_id)
+        except Exception as e:
+            logger.error(f"Failed to fetch missing genre app_ids for user_id={user_id}: {e}")
+            raise
+
+    def save_genres(self, app_id, genres):
+        """Store genre tags for a game."""
+        try:
+            with self.engine.connect() as conn:
+                Sql.save_genres(conn, app_id, genres)
+                conn.commit()
+            logger.debug(f"Genres saved — app_id={app_id}, genres={genres}")
+        except Exception as e:
+            logger.error(f"Failed to save genres for app_id={app_id}: {e}")
+            raise
+
+    def get_playtime_by_genre(self, user_id):
+        """Total playtime per genre for a user."""
+        try:
+            with self.engine.connect() as conn:
+                return Sql.get_playtime_by_genre(conn, user_id)
+        except Exception as e:
+            logger.error(f"Failed to fetch playtime by genre for user_id={user_id}: {e}")
+            raise
+
     def close(self):
         """Dispose of the engine and release all pooled connections."""
         self.engine.dispose()

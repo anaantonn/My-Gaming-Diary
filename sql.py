@@ -30,6 +30,13 @@ class Sql:
                 duration_minutes INTEGER NOT NULL
             )
         """))
+        conn.execute(text("""
+            CREATE TABLE IF NOT EXISTS game_genres (
+                app_id  INTEGER NOT NULL REFERENCES games(app_id),
+                genre   VARCHAR(100) NOT NULL,
+                PRIMARY KEY (app_id, genre)
+            )
+        """))
 
     @staticmethod
     def init_views(conn):
@@ -225,5 +232,50 @@ class Sql:
                 ORDER BY play_year DESC
             """),
             {"user_id": user_id}
+        )
+        return result.fetchall()
+
+    @staticmethod
+    def get_missing_genre_app_ids(conn, user_id):
+        """Return app_ids the user has played that have no genres cached yet."""
+        result = conn.execute(
+            text("""
+                SELECT DISTINCT s.app_id
+                FROM sessions s
+                WHERE s.user_id = :user_id
+                AND s.app_id NOT IN (
+                    SELECT DISTINCT app_id FROM game_genres
+                )
+            """),
+            {"user_id": user_id},
+        )
+        return [row[0] for row in result.fetchall()]
+
+    @staticmethod
+    def save_genres(conn, app_id, genres):
+        """Insert genre rows for a game, ignoring duplicates."""
+        for genre in genres:
+            conn.execute(
+                text("""
+                    INSERT INTO game_genres (app_id, genre)
+                    VALUES (:app_id, :genre)
+                    ON CONFLICT DO NOTHING
+                """),
+                {"app_id": app_id, "genre": genre},
+            )
+
+    @staticmethod
+    def get_playtime_by_genre(conn, user_id):
+        """Total playtime per genre for a user. A game counts toward every genre it belongs to."""
+        result = conn.execute(
+            text("""
+                SELECT gg.genre, SUM(s.duration_minutes) AS total_minutes
+                FROM sessions s
+                JOIN game_genres gg ON gg.app_id = s.app_id
+                WHERE s.user_id = :user_id
+                GROUP BY gg.genre
+                ORDER BY total_minutes DESC
+            """),
+            {"user_id": user_id},
         )
         return result.fetchall()

@@ -40,6 +40,10 @@ def create_app():
         month = datetime.now().month
         return render_template("stats.html", year=year, month=month)
 
+    @app.route("/overview")
+    def overview():
+        return render_template("overview.html")
+
     @app.route("/health")
     def health():
         try:
