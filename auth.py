@@ -1,9 +1,9 @@
 import re
+from urllib.parse import urlencode
 
 import requests as http
 from flask import (Blueprint, current_app, jsonify,
                     redirect, request, session, url_for)
-from urllib.parse import urlencode
 
 from logger import get_logger
 
@@ -54,6 +54,7 @@ def callback():
 
     session["user_id"] = user_id
     session["steam_id"] = steam_id
+    session["display_name"] = display_name
 
     return redirect(url_for("index"))
 

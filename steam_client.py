@@ -66,3 +66,18 @@ class SteamClient:
         except Exception as e:
             logger.warning(f"Failed to fetch display name: {e}")
             return None
+
+    @staticmethod
+    def get_app_genres(api_key, app_id):
+        """
+        Fetch genre tags for a game from the Steam Store API.
+        Does not require a steam_id.
+        """
+        try:
+            steam   = Steam(api_key)
+            details = steam.apps.get_app_details(app_id, filters="genres")
+            genres  = details.get(str(app_id), {}).get("data", {}).get("genres", [])
+            return [g["description"] for g in genres]
+        except Exception as e:
+            logger.warning(f"Failed to fetch genres for app_id={app_id}: {e}")
+            return []

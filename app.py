@@ -1,6 +1,7 @@
 import os
+from datetime import datetime
 
-from flask import Flask, jsonify, session
+from flask import Flask, jsonify, render_template
 from sqlalchemy import text
 from dotenv import load_dotenv
 
@@ -30,12 +31,18 @@ def create_app():
 
     @app.route("/")
     def index():
-        return jsonify(
-            {
-                "status": "ok",
-                "message": "My Gaming Diary API is running."
-            }
-        )
+        today = datetime.now().astimezone().strftime("%A %d %B %Y")
+        return render_template("index.html", today=today)
+
+    @app.route("/stats")
+    def stats():
+        year = datetime.now().year
+        month = datetime.now().month
+        return render_template("stats.html", year=year, month=month)
+
+    @app.route("/overview")
+    def overview():
+        return render_template("overview.html")
 
     @app.route("/health")
     def health():
@@ -58,13 +65,6 @@ def create_app():
                     "message": "Database connection failed."
                 }
             ), 500
-    # Temporary route for testing purposes
-    @app.route("/me")
-    def me():
-        return jsonify({
-            "user_id": session.get("user_id"),
-            "steam_id": session.get("steam_id"),
-        })
 
     _register_blueprints(app)
 
