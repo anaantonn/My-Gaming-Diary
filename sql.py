@@ -184,7 +184,7 @@ class Sql:
         return result.fetchall()
 
     @staticmethod
-    def get_daily_playtime(conn, user_id, date=None):
+    def get_daily_playtime(conn, user_id, date=None, month=None):
         """Playtime per game per day, plus the day total, for a user."""
         result = conn.execute(
             text("""
@@ -192,23 +192,25 @@ class Sql:
                 FROM user_daily_playtime
                 WHERE user_id = :user_id
                 AND (:date IS NULL OR play_date = :date)
-                ORDER BY play_date DESC
+                AND (:month IS NULL OR TO_CHAR(play_date, 'YYYY-MM') = :month)
+                ORDER BY play_date ASC
             """),
-            {"user_id": user_id, "date": date}
+            {"user_id": user_id, "date": date, "month": month}
         )
         return result.fetchall()
 
     @staticmethod
-    def get_monthly_playtime(conn, user_id):
+    def get_monthly_playtime(conn, user_id, year=None):
         """Playtime per game per month, plus the month total, for a user."""
         result = conn.execute(
             text("""
                 SELECT app_id, game_name, play_month, game_minutes, month_total_minutes
                 FROM user_monthly_playtime
                 WHERE user_id = :user_id
-                ORDER BY play_month DESC
+                AND (:year IS NULL OR EXTRACT(YEAR FROM play_month) = :year)
+                ORDER BY play_month ASC
             """),
-            {"user_id": user_id}
+            {"user_id": user_id, "year": year}
         )
         return result.fetchall()
 

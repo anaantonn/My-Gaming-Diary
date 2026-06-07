@@ -118,20 +118,20 @@ class DiaryDatabase:
             logger.error(f"Failed to fetch game totals for user_id={user_id}: {e}")
             raise
 
-    def get_daily_playtime(self, user_id, date=None):
+    def get_daily_playtime(self, user_id, date=None, month=None):
         """Playtime per game per day, plus the day total, for a user."""
         try:
             with self.engine.connect() as conn:
-                return Sql.get_daily_playtime(conn, user_id, date)
+                return Sql.get_daily_playtime(conn, user_id, date, month)
         except Exception as e:
             logger.error(f"Failed to fetch daily playtime for user_id={user_id}: {e}")
             raise
 
-    def get_monthly_playtime(self, user_id):
+    def get_monthly_playtime(self, user_id, year=None):
         """Playtime per game per month, plus the month total, for a user."""
         try:
             with self.engine.connect() as conn:
-                return Sql.get_monthly_playtime(conn, user_id)
+                return Sql.get_monthly_playtime(conn, user_id, year)
         except Exception as e:
             logger.error(f"Failed to fetch monthly playtime for user_id={user_id}: {e}")
             raise

@@ -36,7 +36,9 @@ def create_app():
 
     @app.route("/stats")
     def stats():
-        return render_template("stats.html")
+        year = datetime.now().year
+        month = datetime.now().month
+        return render_template("stats.html", year=year, month=month)
 
     @app.route("/health")
     def health():

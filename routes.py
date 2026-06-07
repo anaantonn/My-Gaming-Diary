@@ -63,8 +63,13 @@ def get_game_totals():
 def get_daily_playtime():
     try:
         date_filter = request.args.get("date")
+        month_filter = request.args.get("month")
         db = current_app.extensions["db"]
-        rows = db.get_daily_playtime(session["user_id"], date_filter)
+        rows = db.get_daily_playtime(
+            session["user_id"],
+            date_filter,
+            month_filter
+        )
         return jsonify([
             {
                 "app_id": row.app_id,
@@ -83,8 +88,9 @@ def get_daily_playtime():
 @login_required
 def get_monthly_playtime():
     try:
+        year_filter = request.args.get("year", type=int)
         db = current_app.extensions["db"]
-        rows = db.get_monthly_playtime(session["user_id"])
+        rows = db.get_monthly_playtime(session["user_id"], year_filter)
         return jsonify([
             {
                 "app_id":                row.app_id,
