@@ -1,6 +1,7 @@
 from functools import wraps
 
 from flask import Blueprint, current_app, jsonify, request, session
+from steam_client import SteamClient
 
 from logger import get_logger
 
@@ -63,8 +64,13 @@ def get_game_totals():
 def get_daily_playtime():
     try:
         date_filter = request.args.get("date")
+        month_filter = request.args.get("month")
         db = current_app.extensions["db"]
-        rows = db.get_daily_playtime(session["user_id"], date_filter)
+        rows = db.get_daily_playtime(
+            session["user_id"],
+            date_filter,
+            month_filter
+        )
         return jsonify([
             {
                 "app_id": row.app_id,
@@ -83,8 +89,9 @@ def get_daily_playtime():
 @login_required
 def get_monthly_playtime():
     try:
+        year_filter = request.args.get("year", type=int)
         db = current_app.extensions["db"]
-        rows = db.get_monthly_playtime(session["user_id"])
+        rows = db.get_monthly_playtime(session["user_id"], year_filter)
         return jsonify([
             {
                 "app_id":                row.app_id,
@@ -119,3 +126,29 @@ def get_yearly_playtime():
     except Exception as e:
         logger.error(f"GET /api/playtime/yearly failed: {e}")
         return jsonify({"error": "Failed to fetch yearly playtime."}), 500
+
+def _fetch_genres_from_steam(app_id):
+    api_key = current_app.config.get("STEAM_API_KEY")
+    return SteamClient.get_app_genres(api_key, app_id)
+
+@routes.route("/playtime/by-genre")
+@login_required
+def get_playtime_by_genre():
+    try:
+        db = current_app.extensions["db"]
+        user_id = session["user_id"]
+
+        missing = db.get_missing_genre_app_ids(user_id)
+        for app_id in missing:
+            genres = _fetch_genres_from_steam(app_id)
+            if genres:
+                db.save_genres(app_id, genres)
+
+        rows = db.get_playtime_by_genre(user_id)
+        return jsonify([
+            {"genre": row.genre, "total_minutes": row.total_minutes}
+            for row in rows
+        ])
+    except Exception as e:
+        logger.error(f"GET /api/playtime/by-genre failed: {e}")
+        return jsonify({"error": "Failed to fetch genre playtime."}), 500

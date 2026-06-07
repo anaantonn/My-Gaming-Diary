@@ -1,0 +1,53 @@
+{% extends "base.html" %} {% block content %} {% if session.user_id %}
+<div id="overviewpage" class="flex-1 flex flex-col">
+    <section class="flex flex-col items-center gap-4 px-5 py-12">
+        <h1 class="text-5xl font-bold">
+            <span
+                class="bg-linear-to-r/increasing from-violet-500 to-fuchsia-500 bg-clip-text text-transparent"
+            >
+                {{ session.display_name }}'s
+            </span>
+            overview
+        </h1>
+    </section>
+
+    <section
+        class="flex-1 flex flex-row flex-wrap justify-center gap-12 mx-8 mb-8"
+    >
+        <div
+            class="flex flex-col items-center gap-4 flex-1"
+            style="min-width: 300px; max-width: 480px"
+        >
+            <h2 class="text-2xl font-semibold">All-time by game</h2>
+            <div class="relative w-full" style="min-height: 360px">
+                <canvas id="gameTotalsChart"></canvas>
+            </div>
+        </div>
+
+        <div
+            class="flex flex-col items-center gap-4 flex-1"
+            style="min-width: 300px; max-width: 480px"
+        >
+            <h2 class="text-2xl font-semibold">Year by year</h2>
+            <div class="relative w-full" style="min-height: 360px">
+                <canvas id="yearlyChart"></canvas>
+            </div>
+        </div>
+    </section>
+    <section class="flex justify-center mx-8 mb-8">
+        <div
+            class="flex flex-col items-center gap-4 w-full"
+            style="max-width: 680px"
+        >
+            <h2 class="text-2xl font-semibold">By genre</h2>
+            <div class="relative w-full" style="min-height: 400px">
+                <canvas id="genreChart"></canvas>
+            </div>
+        </div>
+    </section>
+</div>
+<script src="{{ url_for('static', filename='js/overview.js') }}"></script>
+
+{% else %}
+<meta http-equiv="refresh" content="2; url=/" />
+{% endif %} {% endblock %}

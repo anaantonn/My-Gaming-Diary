@@ -1,0 +1,58 @@
+{% extends "base.html" %} {% block content %} {% if session.user_id %}
+<div id="statspage" class="flex-1 flex flex-col">
+    <section class="flex flex-col items-center gap-4 px-5 py-12">
+        <h1 class="text-5xl font-bold">
+            <span
+                class="bg-linear-to-r/increasing from-violet-500 to-fuchsia-500 bg-clip-text text-transparent"
+            >
+                {{ session.display_name }}'s
+            </span>
+            diary stats
+        </h1>
+    </section>
+    <nav
+        id="stats-tabs"
+        class="relative flex justify-center gap-10 mx-8 mb-8 text-5xl cursor-pointer select-none"
+    >
+        <span id="tab-monthly" class="tab pb-2 transition-colors duration-300"
+            >Monthly</span
+        >
+        <span
+            id="tab-yearly"
+            class="tab pb-2 text-gray-300/75 transition-colors duration-300"
+            >Yearly</span
+        >
+        <div
+            id="tab-underline"
+            class="absolute bottom-0 h-0.5 bg-gray-500 transition-all duration-300 ease-in-out"
+        ></div>
+    </nav>
+
+    <div id="monthly-view" class="flex-1 flex flex-col" style="transition: opacity 0.25s ease;">
+        <div class="relative flex items-center justify-center gap-6 mb-6 text-2xl select-none">
+            <button id="prev-month" class="hover:text-gray-300 transition-colors cursor-pointer">&#8592;</button>
+            <span id="month-display" class="cursor-pointer font-semibold min-w-52 text-center hover:text-gray-300 transition-colors"></span>
+            <button id="next-month" class="hover:text-gray-300 transition-colors cursor-pointer">&#8594;</button>
+            <div id="month-picker-popover" class="hidden absolute top-full mt-2 bg-sky-900/95 backdrop-blur rounded-xl p-4 z-10 shadow-xl w-64 text-base"></div>
+        </div>
+        <div class="flex-1 relative mx-8 mb-8" style="min-height: 380px;">
+            <canvas id="monthlyChart"></canvas>
+        </div>
+    </div>
+
+    <div id="yearly-view" class="flex-1 flex flex-col" style="transition: opacity 0.25s ease; opacity: 0;">
+        <div class="relative flex items-center justify-center gap-6 mb-6 text-2xl select-none">
+            <button id="prev-year" class="hover:text-gray-300 transition-colors cursor-pointer">&#8592;</button>
+            <span id="year-display" class="cursor-pointer font-semibold min-w-24 text-center hover:text-gray-300 transition-colors"></span>
+            <button id="next-year" class="hover:text-gray-300 transition-colors cursor-pointer">&#8594;</button>
+            <div id="year-picker-popover" class="hidden absolute top-full mt-2 bg-sky-900/95 backdrop-blur rounded-xl p-4 z-10 shadow-xl w-64 text-base"></div>
+        </div>
+        <div class="flex-1 relative mx-8 mb-8" style="min-height: 380px;">
+            <canvas id="yearlyChart"></canvas>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/stats.js') }}"></script>
+</div>
+    {% else %}
+    <meta http-equiv="refresh" content="2; url=/" />
+    {% endif %} {% endblock %}

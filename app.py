@@ -1,6 +1,7 @@
 import os
+from datetime import datetime
 
-from flask import Flask, jsonify, render_template, session
+from flask import Flask, jsonify, render_template
 from sqlalchemy import text
 from dotenv import load_dotenv
 
@@ -30,7 +31,18 @@ def create_app():
 
     @app.route("/")
     def index():
-        return render_template("index.html")
+        today = datetime.now().astimezone().strftime("%A %d %B %Y")
+        return render_template("index.html", today=today)
+
+    @app.route("/stats")
+    def stats():
+        year = datetime.now().year
+        month = datetime.now().month
+        return render_template("stats.html", year=year, month=month)
+
+    @app.route("/overview")
+    def overview():
+        return render_template("overview.html")
 
     @app.route("/health")
     def health():
