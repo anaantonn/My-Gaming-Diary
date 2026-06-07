@@ -22,15 +22,34 @@ and considers a session finished once no update has been seen for 35 minutes.
 
 ## Setup
 
-### 1. Clone the repo and install dependencies
+### 1. Clone the repo
 
 ```bash
 git clone https://github.com/anaantonn/My-Gaming-Diary.git
 cd My-Gaming-Diary
+```
+
+### 2. Create and activate a virtual environment
+
+```bash
+python3 -m venv .venv
+```
+
+```bash
+# macOS / Linux
+source .venv/bin/activate
+
+# Windows
+.venv\Scripts\activate
+```
+
+### 3. Install dependencies
+
+```bash
 pip install -r requirements.txt
 ```
 
-### 2. Create a PostgreSQL database
+### 4. Create a PostgreSQL database
 
 ```bash
 psql -U postgres
@@ -41,7 +60,7 @@ CREATE DATABASE db_name;
 \q
 ```
 
-### 3. Configure environment variables
+### 5. Configure environment variables
 
 Copy `.env.example` to `.env` and fill in your credentials,
 a database path should look like this:
@@ -54,7 +73,7 @@ DB_PATH=postgresql://postgres:yourpassword@localhost:5432/game_diary
 cp .env.example .env
 ```
 
-### 4. Run
+### 6. Run
 
 ```bash
 python game_diary.py
@@ -97,26 +116,26 @@ their own API key.
 
 ## Project structure
 
-| File                      | Purpose                                                        |
-| ------------------------- | -------------------------------------------------------------- |
-| `game_diary.py`           | Entry point — wires everything together and runs the poll loop |
-| `steam_client.py`         | Steam API wrapper                                              |
-| `session_tracker.py`      | Session state, timeout detection, flush logic                  |
-| `database.py`             | Connection management, logging, transactions                   |
-| `sql.py`                  | Raw SQL queries and schema                                     |
-| `config.py`               | Environment variable loading                                   |
-| `logger.py`               | Logging setup (terminal + rotating file)                       |
-| `app.py`                  | Flask Application Factory as a web server entry point          |
-| `auth.py`                 | Steam OpenID login, callback and logout routes                 |
-| `routes.py`               | API blueprint — JSON endpoints for sessions and playtime data  |
-| `templates/base.html`     | Shared layout — navigation, Tailwind CSS v4, Chart.js          |
-| `templates/index.html`    | Homepage — login prompt or daily diary entry                   |
-| `templates/stats.html`    | Monthly and yearly playtime charts with period pickers         |
-| `templates/overview.html` | All-time game breakdown and year-by-year doughnut charts       |
-| `static/js/nav.js`        | Shared navigation — highlights the active page in the nav bar  |
-| `static/js/main.js`       | Homepage — date picker, session table population               |
-| `static/js/stats.js`      | Stats page — bar charts, month/year pickers, tab switching     |
-| `static/js/overview.js`   | Overview page — all-time and yearly doughnut charts            |
+| File                      | Purpose                                                          |
+| ------------------------- | ---------------------------------------------------------------- |
+| `game_diary.py`           | Entry point — wires everything together and runs the poll loop   |
+| `steam_client.py`         | Steam API wrapper                                                |
+| `session_tracker.py`      | Session state, timeout detection, flush logic                    |
+| `database.py`             | Connection management, logging, transactions                     |
+| `sql.py`                  | Raw SQL queries and schema                                       |
+| `config.py`               | Environment variable loading                                     |
+| `logger.py`               | Logging setup (terminal + rotating file)                         |
+| `app.py`                  | Flask Application Factory as a web server entry point            |
+| `auth.py`                 | Steam OpenID login, callback and logout routes                   |
+| `routes.py`               | API blueprint — JSON endpoints for sessions and playtime data    |
+| `templates/base.html`     | Shared layout — navigation, Tailwind CSS v4, Chart.js            |
+| `templates/index.html`    | Homepage — login prompt or daily diary entry                     |
+| `templates/stats.html`    | Monthly and yearly playtime charts with period pickers           |
+| `templates/overview.html` | All-time game breakdown, year-by-year, and genre doughnut charts |
+| `static/js/nav.js`        | Shared navigation — highlights the active page in the nav bar    |
+| `static/js/main.js`       | Homepage — date picker, session table population                 |
+| `static/js/stats.js`      | Stats page — bar charts, month/year pickers, tab switching       |
+| `static/js/overview.js`   | Overview page — all-time and yearly doughnut charts              |
 
 ## Logs
 
@@ -128,13 +147,14 @@ Terminal output shows `INFO` and above. Log files capture everything including `
 All routes require an active session (login via Steam first).
 Responses are JSON.
 
-| Route                       | Query params                           | Description                                        |
-| --------------------------- | -------------------------------------- | -------------------------------------------------- |
-| `GET /api/sessions`         | `?date=YYYY-MM-DD`                     | Play sessions for a user, newest first             |
-| `GET /api/game-totals`      | —                                      | All-time total playtime and session count per game |
-| `GET /api/playtime/daily`   | `?date=YYYY-MM-DD` or `?month=YYYY-MM` | Playtime per game per day                          |
-| `GET /api/playtime/monthly` | `?year=YYYY`                           | Playtime per game per month                        |
-| `GET /api/playtime/yearly`  | —                                      | Playtime per game per year                         |
+| Route                        | Query params                           | Description                                        |
+| ---------------------------- | -------------------------------------- | -------------------------------------------------- |
+| `GET /api/sessions`          | `?date=YYYY-MM-DD`                     | Play sessions for a user, newest first             |
+| `GET /api/game-totals`       | —                                      | All-time total playtime and session count per game |
+| `GET /api/playtime/daily`    | `?date=YYYY-MM-DD` or `?month=YYYY-MM` | Playtime per game per day                          |
+| `GET /api/playtime/monthly`  | `?year=YYYY`                           | Playtime per game per month                        |
+| `GET /api/playtime/yearly`   | —                                      | Playtime per game per year                         |
+| `GET /api/playtime/by-genre` | —                                      | Total playtime per genre across all sessions       |
 
 ## Frontend
 
@@ -162,8 +182,11 @@ game and show start time, end time, and duration in minutes.
 - _Yearly_ — bar chart of the top 5 games per month for a chosen year.
   A year picker with the same arrow and popover pattern.
 
-**Overview (`/overview`)** — Two doughnut charts displayed side by side:
+**Overview (`/overview`)** — Three doughnut charts:
 
 - _All-time by game_ — each game's share of total playtime ever recorded,
   top 8 shown individually with the remainder grouped as "Others".
 - _Year by year_ — each calendar year's share of total playtime.
+- _By genre_ — playtime broken down by Steam genre tag. A game contributes
+  its minutes to every genre it belongs to. Genres are fetched from the Steam
+  Store API on first load and cached in the database for subsequent visits.
